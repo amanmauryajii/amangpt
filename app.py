@@ -28,9 +28,9 @@ def generate_answer(question):
     
     question = chat_completion.choices[0].message.content
 
-    words = f"This is a streaming answer to:\n\n {question}".split()
+    words = f"{question}".split()
     for word in words:
-        time.sleep(0)  # Simulate processing time
+        time.sleep(0.05)  # Simulate processing time
         yield word + ' '
 
 if __name__ == '__main__':
