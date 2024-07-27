@@ -30,7 +30,7 @@ def generate_answer(question):
 
     words = f"This is a streaming answer to:\n\n {question}".split()
     for word in words:
-        time.sleep(0.1)  # Simulate processing time
+        time.sleep(0)  # Simulate processing time
         yield word + ' '
 
 if __name__ == '__main__':
