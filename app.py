@@ -30,7 +30,7 @@ def generate_answer(question):
 
     words = f"{question}".split()
     for word in words:
-        time.sleep(0.05)  # Simulate processing time
+        time.sleep(0)  # Simulate processing time
         yield word + ' '
 
 if __name__ == '__main__':
