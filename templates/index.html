@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aman AI Transformer</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        #chat-container {
+            height: 70vh;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-y: scroll;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #input-container {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        #question {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #send-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #send-btn:hover {
+            background-color: #0052a3;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: #e6f2ff;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background-color: #f0f0f0;
+            align-self: flex-start;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 10px;
+            margin-left: 5px;
+            background-color: #333;
+            border-radius: 5px;
+            animation: typing 1s infinite;
+        }
+
+        @keyframes typing {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            #chat-container {
+                height: 60vh;
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+    <div id="chat-container"></div>
+    <div id="input-container">
+        <input type="text" id="question" placeholder="Ask a question...">
+        <button id="send-btn" onclick="askQuestion()">Send</button>
+    </div>
+
+    <script>
+        function askQuestion() {
+            var question = $('#question').val();
+            if (question.trim() === '') return;
+
+            $('#chat-container').append('<div class="message user-message"><strong>You:</strong> ' + question + '</div>');
+            $('#question').val('');
+
+            var aiMessage = $('<div class="message ai-message"><strong>AI:</strong> <span class="ai-response"></span></div>');
+            $('#chat-container').append(aiMessage);
+            scrollToBottom();
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'question=' + encodeURIComponent(question)
+            }).then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                function read() {
+                    return reader.read().then(({done, value}) => {
+                        if (done) {
+                            return;
+                        }
+                        const newContent = decoder.decode(value);
+                        aiMessage.find('.ai-response').append(newContent);
+                        scrollToBottom();
+                        return read();
+                    });
+                }
+                return read();
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function scrollToBottom() {
+            $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+        }
+
+        $('#question').keypress(function(e) {
+            if (e.which == 13) {
+                askQuestion();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
